@@ -162,8 +162,8 @@ class game:
 
     @staticmethod
     def defaulthiscorelist():
-        return [(100000, "David"), (80000, "Andy"), (60000, "Count Pacula"), (40000, "Cleopacra"),
-                (20000, "Brett Favre"), (10000, "Sergei Pachmaninoff")]
+        return [(1, "David"), (2, "Andy"), (3, "Count Pacula"), (4, "Cleopacra"),
+                (5, "Brett Favre"), (6, "Sergei Pachmaninoff")]
 
     @staticmethod
     def writehiscores(hs):
@@ -183,12 +183,12 @@ class game:
         try:
             import wx
         except:
-            print("""Pacman Error: No module wx. Can not ask the user his name!
+            print("""Pacman Error: No module wx. Can not ask the user their name!
                      :(       Download wx from http://www.wxpython.org/"
                      :(       To avoid seeing this error again, set NO_WX in file pacman.pyw.""")
             return USER_NAME
-        app = wx.App(None)
-        dlog = wx.TextEntryDialog(None, "You made the high-score list! Name:")
+        app = wx.PyApp()
+        dlog = wx.TextEntryDialog(None, "You made the high-score list! Name and StudentID:")
         dlog.ShowModal()
         name = dlog.GetValue()
         dlog.Destroy()
