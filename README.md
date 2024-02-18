@@ -1,3 +1,32 @@
+ComSSA Competitive Pacman (CCP) 
+===============================
+By Joseph, Stan
+Thanks to Jake and Nick for researching ideas
+Based on Pacman by David Reilly
+Goal: Demonstrate what can be learnt througgh ComSSA workshops through a 
+small program. We've chosen pacman. During Guild O-Day, new students
+will compete to get the highest score and can win things like ComSSA
+merch and discord roles. 
+
+Installation (MAC):
+-------------------
+Install python at https://www.python.org/downloads/
+Install pygame: pip install pygame
+Install wx: pip install -U wxpython
+
+Modifications to original fork:
+- New menu (Ongoing) @Stan
+- Rescaling to 1080p (Ongoing) @Stan
+- New Pacman Sprite (Ongoing) @Joseph
+- Rebalancing score to shorten game (Ongoing) 
+- Various bug fixes
+  1. Fixed wedding level being forced @Joseph
+  2. Fixed player score input @Joseph
+
+
+
+
+------- Original Fork -------
 Pacman by David Reilly
 ======================
 With contributions by Andy Sommerville (2007)
