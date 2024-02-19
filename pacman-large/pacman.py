@@ -257,7 +257,7 @@ class game:
     def StartNewGame(self):
         self.levelNum = 1
         self.score = 0
-        self.lives = 3
+        self.lives = 0
 
         self.SetMode(0)
         thisLevel.LoadLevel(thisGame.GetLevelNum())
@@ -1278,7 +1278,7 @@ class level:
                                                                row * TILE_HEIGHT - thisGame.screenPixelOffset[1]))
 
                     elif useTile == tileID['showlogo']:
-                        screen.blit(thisGame.imLogo, (col * TILE_WIDTH - thisGame.screenPixelOffset[0],
+                        screen.blit(thisGame.imLogo, (col * TILE_WIDTH - thisGame.screenPixelOffset[0] - 25,
                                                       row * TILE_HEIGHT - thisGame.screenPixelOffset[1]))
 
                     elif useTile == tileID['hiscores']:
@@ -1587,8 +1587,8 @@ thisGame = game()
 thisLevel = level()
 thisLevel.LoadLevel(thisGame.GetLevelNum())
 
-#window = pygame.display.set_mode(thisGame.screenSize, pygame.FULLSCREEN)
-window = pygame.display.set_mode(thisGame.screenSize)
+window = pygame.display.set_mode(thisGame.screenSize, pygame.FULLSCREEN)
+# window = pygame.display.set_mode(thisGame.screenSize)
 
 # initialise the joystick
 if pygame.joystick.get_count() > 0:
@@ -1688,7 +1688,6 @@ while True:
             thisLevel.edgeLightColor = (255, 255, 254, 255)
             thisLevel.edgeShadowColor = (255, 255, 254, 255)
             thisLevel.fillColor = (0, 0, 0, 255)
-            GetCrossRef()
         elif not normalSet.count(thisGame.modeTimer) == 0:
             # member of normal set
             thisLevel.edgeLightColor = oldEdgeLightColor
