@@ -42,7 +42,7 @@ comssa_theme.title = False
 
 # get s_height and s_width
 
-def show_menu():
+def show_menu(won):
 
     # get size of window
     s_width, s_height = pygame.display.get_surface().get_size()
@@ -53,20 +53,22 @@ def show_menu():
         theme=comssa_theme,
         width=s_width
     )
-    # menu.add.label(
-    #     'ComSSA   Pacman',
-    #     align=pygame_menu.locals.ALIGN_CENTER,
-    #     font_size=50,
-    #     # color of white
-    #     font_color=(255, 255, 255)
-    #     # font_name='arcade.ttf'
-    # )
 
     logo = pygame_menu.baseimage.BaseImage(
         image_path='./res/text/logo.gif',
         drawing_mode=pygame_menu.baseimage.IMAGE_MODE_FILL
     )
     menu.add.image(logo)
+
+    if won:
+        menu.add.label(
+            'You Won!',
+            align=pygame_menu.locals.ALIGN_CENTER,
+            font_size=50,
+            # color of white
+            font_color=(255, 255, 255)
+            # font_name='arcade.ttf'
+        )
 
     menu.add.text_input(
         'Enter your Student/Staff ID: ',
@@ -325,13 +327,13 @@ class game:
         except IOError:
             return self.defaulthiscorelist()
 
-    def updatehiscores(self, newscore):
+    def updatehiscores(self, newscore, won=False):
         """Add newscore to the high score list, if appropriate."""
         hs = self.gethiscores()
         for line in hs:
             if newscore >= line[0]:
                 # call menu and log results
-                [playerID, discordID] = show_menu()
+                [playerID, discordID] = show_menu(won)
                 print(playerID, discordID)
                 # hs.insert(hs.index(line), (newscore, self.getplayername()))
                 hs.insert(hs.index(line), (newscore, playerID + " " + discordID))
@@ -1004,7 +1006,8 @@ class pacman:
         self.y = 0
         self.velX = 0
         self.velY = 0
-        self.speed = 3
+        # self.speed = 3
+        self.speed = 8
 
         self.nearestRow = 0
         self.nearestCol = 0
@@ -1254,7 +1257,15 @@ class level:
                         if thisLevel.pellets == 0:
                             # no more pellets left!
                             # WON THE LEVEL
-                            thisGame.SetMode(MODE_WAIT_AFTER_FINISHING_LEVEL)
+                            if thisGame.levelNum == 2:
+                                # END GAME
+                                thisGame.updatehiscores(thisGame.score, won=True)
+                                # add delay
+                                pygame.time.wait(200)
+                                thisGame.SetMode(MODE_GAME_OVER)
+                                thisGame.drawmidgamehiscores()
+                            else:
+                                thisGame.SetMode(MODE_WAIT_AFTER_FINISHING_LEVEL)
 
 
                     elif result == tileID['pellet-power']:
@@ -1527,8 +1538,8 @@ class level:
         self.Restart()
 
     def Restart(self):
-        if thisGame.levelNum == 2:
-            player.speed = 4
+        # if thisGame.levelNum == 2:
+            # player.speed = 4
 
         for i in range(0, 4, 1):
             # move ghosts back to home
@@ -1761,6 +1772,7 @@ while True:
             thisGame.SetMode(MODE_EXTRA_PACMAN_SMALL_GHOST)
 
     elif thisGame.mode == MODE_WAIT_AFTER_FINISHING_LEVEL:
+
         # pause after eating all the pellets
         thisGame.modeTimer += 1
 
