@@ -25,6 +25,74 @@ import sys
 
 import pygame
 from pygame.locals import *
+import pygame_menu
+
+pygame.font.init()
+
+# Pygame Menu theme
+comssa_theme = pygame_menu.themes.THEME_DARK.copy()
+# background color #4459a5
+# comssa_theme.background_color = (68, 89, 165)
+# no default title
+comssa_theme.title = False
+# selection colour for input with 30% transparency for color #f5831f 
+# comssa_theme.cursor_selection_color = (245, 131, 31, 80)
+# cursor color #f5831f
+# comssa_theme.cursor_color = (245, 131, 31)
+
+# get s_height and s_width
+
+def show_menu():
+
+    # get size of window
+    s_width, s_height = pygame.display.get_surface().get_size()
+
+    menu = pygame_menu.Menu(
+        height=s_height,
+        title='Submit your score',
+        theme=comssa_theme,
+        width=s_width
+    )
+    menu.add.label(
+        'ComSSA   Pacman',
+        align=pygame_menu.locals.ALIGN_CENTER,
+        font_size=50,
+        # color of white
+        font_color=(255, 255, 255)
+        # font_name='arcade.ttf'
+    )
+
+    menu.add.text_input(
+        'Enter your Student/Staff ID: ',
+        default='',
+        textinput_id='player_id',
+        font_size=32
+    )
+
+    menu.add.text_input(
+        'Enter your Discord ID/Tag: ',
+        default='',
+        textinput_id='discord_id',
+        font_size=32
+    )
+
+    menu.add.button(
+        'New Game',
+        # exit menu
+        menu.disable,
+        align=pygame_menu.locals.ALIGN_CENTER,
+        font_size=32
+    )
+
+    menu.mainloop(window)
+
+    playerID = menu.get_input_data()['player_id']
+
+    # get the discord ID from the menu
+    discordID = menu.get_input_data()['discord_id']
+
+    return [playerID, discordID]
+
 
 # WIN???
 if os.name == "nt":
@@ -125,6 +193,31 @@ rect_list = []  # rect list for drawing
 #      ___________________
 # ___/  class definitions  \_______________________________________________
 
+# game "mode" variable
+# 0 = ready to level start
+# 1 = normal
+# 2 = hit ghost
+# 3 = game over
+# 4 = wait to start
+# 5 = wait after eating ghost
+# 6 = wait after finishing level
+# 7 = flashing maze after finishing level
+# 8 = extra pacman, small ghost mode
+# 9 = changed ghost to glasses
+# 10 = blank screen before changing levels
+# SEAN EDIT: ASSIGNED VALUES TO MODES
+MODE_READY_TO_LEVEL_START = 0
+MODE_NORMAL = 1
+MODE_HIT_GHOST = 2
+MODE_GAME_OVER = 3
+MODE_WAIT_TO_START = 4
+MODE_WAIT_AFTER_EATING_GHOST = 5
+MODE_WAIT_AFTER_FINISHING_LEVEL = 6
+MODE_FLASHING_MAZE_AFTER_FINISHING_LEVEL = 7
+MODE_EXTRA_PACMAN_SMALL_GHOST = 8
+MODE_CHANGED_GHOST_TO_GLASSES = 9
+MODE_BLANK_SCREEN_BEFORE_CHANGING_LEVELS = 10
+
 class game:
 
     def __init__(self):
@@ -140,7 +233,7 @@ class game:
         self.fruitScoreTimer = 0
         self.fruitScorePos = (0, 0)
 
-        self.SetMode(3)
+        self.SetMode(MODE_GAME_OVER)
 
         # camera variables
         self.screenTileSize = (SCREEN_TILE_SIZE_HEIGHT, SCREEN_TILE_SIZE_WIDTH)
@@ -175,25 +268,25 @@ class game:
         f.close()
 
     @staticmethod
-    def getplayername():
-        """Ask the player his name, to go on the high-score list."""
-        if NO_WX:
-            return USER_NAME
-        # noinspection PyBroadException
-        try:
-            import wx
-        except:
-            print("""Pacman Error: No module wx. Can not ask the user their name!
-                     :(       Download wx from http://www.wxpython.org/"
-                     :(       To avoid seeing this error again, set NO_WX in file pacman.pyw.""")
-            return USER_NAME
-        app = wx.PyApp()
-        dlog = wx.TextEntryDialog(None, "You made the high-score list! Name and StudentID:")
-        dlog.ShowModal()
-        name = dlog.GetValue()
-        dlog.Destroy()
-        app.Destroy()
-        return name
+    # def getplayername():
+    #     """Ask the player his name, to go on the high-score list."""
+    #     if NO_WX:
+    #         return USER_NAME
+    #     # noinspection PyBroadException
+    #     try:
+    #         import wx
+    #     except:
+    #         print("""Pacman Error: No module wx. Can not ask the user their name!
+    #                  :(       Download wx from http://www.wxpython.org/"
+    #                  :(       To avoid seeing this error again, set NO_WX in file pacman.pyw.""")
+    #         return USER_NAME
+    #     app = wx.PyApp()
+    #     dlog = wx.TextEntryDialog(None, "You made the high-score list! Name and StudentID:")
+    #     dlog.ShowModal()
+    #     name = dlog.GetValue()
+    #     dlog.Destroy()
+    #     app.Destroy()
+    #     return name
 
     @staticmethod
     def PlayBackgoundSound(snd):
@@ -228,7 +321,11 @@ class game:
         hs = self.gethiscores()
         for line in hs:
             if newscore >= line[0]:
-                hs.insert(hs.index(line), (newscore, self.getplayername()))
+                # call menu and log results
+                [playerID, discordID] = show_menu()
+                print(playerID, discordID)
+                # hs.insert(hs.index(line), (newscore, self.getplayername()))
+                hs.insert(hs.index(line), (newscore, playerID + " " + discordID))
                 hs.pop(-1)
                 break
         self.writehiscores(hs)
@@ -259,7 +356,7 @@ class game:
         self.score = 0
         self.lives = 0
 
-        self.SetMode(0)
+        self.SetMode(MODE_READY_TO_LEVEL_START)
         thisLevel.LoadLevel(thisGame.GetLevelNum())
 
     def AddToScore(self, amount):
@@ -338,7 +435,7 @@ class game:
     def SetNextLevel(self):
         self.levelNum += 1
 
-        self.SetMode(0)
+        self.SetMode(MODE_READY_TO_LEVEL_START)
         thisLevel.LoadLevel(thisGame.GetLevelNum())
 
         player.velX = 0
@@ -718,8 +815,8 @@ class ghost:
             self.animDelay = 0
 
     def Move(self):
-        if (thisGame.levelNum == 2):
-            return
+        # if (thisGame.levelNum == 2):
+        #     return
         self.x += self.velX
         self.y += self.velY
 
@@ -948,7 +1045,7 @@ class pacman:
 
                     if ghosts[i].state == 1:
                         # ghost is normal
-                        thisGame.SetMode(2)
+                        thisGame.SetMode(MODE_HIT_GHOST)
 
                     elif ghosts[i].state == 2:
                         # ghost is vulnerable
@@ -968,7 +1065,7 @@ class pacman:
                         ghosts[i].FollowNextPathWay()
 
                         # set game mode to brief pause after eating
-                        thisGame.SetMode(5)
+                        thisGame.SetMode(MODE_WAIT_AFTER_EATING_GHOST)
 
             # check for collisions with the fruit
             if thisFruit.active:
@@ -1148,12 +1245,12 @@ class level:
                         if thisLevel.pellets == 0:
                             # no more pellets left!
                             # WON THE LEVEL
-                            thisGame.SetMode(6)
+                            thisGame.SetMode(MODE_WAIT_AFTER_FINISHING_LEVEL)
 
 
                     elif result == tileID['pellet-power']:
                         # got a power pellet
-                        thisGame.SetMode(9)
+                        thisGame.SetMode(MODE_CHANGED_GHOST_TO_GLASSES)
                         thisLevel.SetMapTile((iRow, iCol), 0)
                         snd_powerpellet.play()
 
@@ -1206,7 +1303,7 @@ class level:
                                         player.y -= TILE_HEIGHT
 
                     elif result == tileID['heart']:
-                        thisGame.SetMode(11)
+                        thisGame.SetMode(11) # !!!!
 
     def GetGhostBoxPos(self):
         for row in range(0, self.lvlHeight, 1):
@@ -1465,6 +1562,7 @@ def CheckIfCloseButton(events):
 
 
 def CheckInputs():
+
     if thisGame.mode == 1 or thisGame.mode == 8 or thisGame.mode == 9:
         if pygame.key.get_pressed()[pygame.K_RIGHT] or (js is not None and js.get_axis(JS_XAXIS) > 0.5):
             if not (player.velX == player.speed and player.velY == 0) and not thisLevel.CheckIfHitWall(
@@ -1587,8 +1685,8 @@ thisGame = game()
 thisLevel = level()
 thisLevel.LoadLevel(thisGame.GetLevelNum())
 
-window = pygame.display.set_mode(thisGame.screenSize, pygame.FULLSCREEN)
-# window = pygame.display.set_mode(thisGame.screenSize)
+# window = pygame.display.set_mode(thisGame.screenSize, pygame.FULLSCREEN)
+window = pygame.display.set_mode(thisGame.screenSize)
 
 # initialise the joystick
 if pygame.joystick.get_count() > 0:
@@ -1600,29 +1698,16 @@ if pygame.joystick.get_count() > 0:
 else:
     js = None
 
-# game "mode" variable
-# 0 = ready to level start
-# 1 = normal
-# 2 = hit ghost
-# 3 = game over
-# 4 = wait to start
-# 5 = wait after eating ghost
-# 6 = wait after finishing level
-# 7 = flashing maze after finishing level
-# 8 = extra pacman, small ghost mode
-# 9 = changed ghost to glasses
-# 10 = blank screen before changing levels
-
 while True:
     CheckIfCloseButton(pygame.event.get())
-    if thisGame.mode == 0:
+    if thisGame.mode == MODE_READY_TO_LEVEL_START:
         # ready to level start
         thisGame.modeTimer += 1
 
         if thisGame.modeTimer == 150:
-            thisGame.SetMode(1)
+            thisGame.SetMode(MODE_NORMAL)
 
-    if thisGame.mode == 1:
+    if thisGame.mode == MODE_NORMAL:
         # normal gameplay mode
         CheckInputs()
         thisGame.modeTimer += 1
@@ -1632,51 +1717,49 @@ while True:
             ghosts[i].Move()
         thisFruit.Move()
 
-    elif thisGame.mode == 2:
+    elif thisGame.mode == MODE_HIT_GHOST:
         # waiting after getting hit by a ghost
         thisGame.modeTimer += 1
 
-        if thisGame.modeTimer == 60:
-            thisLevel.Restart()
+        thisGame.lives -= 1
+        if thisGame.lives == -1:
+            thisGame.updatehiscores(thisGame.score)
+            thisGame.SetMode(MODE_GAME_OVER)
+            thisGame.drawmidgamehiscores()
+        else:
+            thisGame.SetMode(MODE_WAIT_TO_START)
 
-            thisGame.lives -= 1
-            if thisGame.lives == -1:
-                thisGame.updatehiscores(thisGame.score)
-                thisGame.SetMode(3)
-                thisGame.drawmidgamehiscores()
-            else:
-                thisGame.SetMode(4)
-
-    elif thisGame.mode == 3:
+    elif thisGame.mode == MODE_GAME_OVER:
         # game over
         CheckInputs()
 
-    elif thisGame.mode == 4:
+    elif thisGame.mode == MODE_WAIT_TO_START:
         # waiting to start
         thisGame.modeTimer += 1
 
         if thisGame.modeTimer == 60:
-            thisGame.SetMode(1)
+            thisLevel.Restart()
+            thisGame.SetMode(MODE_NORMAL)
             player.velX = player.speed
 
-    elif thisGame.mode == 5:
+    elif thisGame.mode == MODE_WAIT_AFTER_EATING_GHOST:
         # brief pause after munching a vulnerable ghost
         thisGame.modeTimer += 1
 
         if thisGame.modeTimer == 20:
-            thisGame.SetMode(8)
+            thisGame.SetMode(MODE_EXTRA_PACMAN_SMALL_GHOST)
 
-    elif thisGame.mode == 6:
+    elif thisGame.mode == MODE_WAIT_AFTER_FINISHING_LEVEL:
         # pause after eating all the pellets
         thisGame.modeTimer += 1
 
         if thisGame.modeTimer == 40:
-            thisGame.SetMode(7)
+            thisGame.SetMode(MODE_FLASHING_MAZE_AFTER_FINISHING_LEVEL)
             oldEdgeLightColor = thisLevel.edgeLightColor
             oldEdgeShadowColor = thisLevel.edgeShadowColor
             oldFillColor = thisLevel.fillColor
 
-    elif thisGame.mode == 7:
+    elif thisGame.mode == MODE_FLASHING_MAZE_AFTER_FINISHING_LEVEL:
         # flashing maze after finishing level
         thisGame.modeTimer += 1
 
@@ -1695,9 +1778,9 @@ while True:
             thisLevel.fillColor = oldFillColor
             GetCrossRef()
         elif thisGame.modeTimer == 100:
-            thisGame.SetMode(10)
+            thisGame.SetMode(MODE_BLANK_SCREEN_BEFORE_CHANGING_LEVELS)
 
-    elif thisGame.mode == 8:
+    elif thisGame.mode == MODE_EXTRA_PACMAN_SMALL_GHOST:
         CheckInputs()
         ghostState = 1
         thisGame.modeTimer += 1
@@ -1716,15 +1799,15 @@ while True:
 
         if thisLevel.pellets == 0:
             # WON THE LEVEL
-            thisGame.SetMode(6)
+            thisGame.SetMode(MODE_WAIT_AFTER_FINISHING_LEVEL)
         elif ghostState == 1:
-            thisGame.SetMode(1)
+            thisGame.SetMode(MODE_NORMAL)
         elif ghostState == 2:
-            thisGame.SetMode(9)
+            thisGame.SetMode(MODE_CHANGED_GHOST_TO_GLASSES)
 
         thisFruit.Move()
 
-    elif thisGame.mode == 9:
+    elif thisGame.mode == MODE_CHANGED_GHOST_TO_GLASSES:
         CheckInputs()
         thisGame.modeTimer += 1
 
@@ -1733,13 +1816,13 @@ while True:
             ghosts[i].Move()
         thisFruit.Move()
 
-    elif thisGame.mode == 10:
+    elif thisGame.mode == MODE_BLANK_SCREEN_BEFORE_CHANGING_LEVELS:
         # blank screen before changing levels
         thisGame.modeTimer += 1
         if thisGame.modeTimer == 10:
             thisGame.SetNextLevel()
 
-    elif thisGame.mode == 11:
+    elif thisGame.mode == 11: # !!!! SHOULD THIS BE 7??
         # flashing maze after finishing level
         thisGame.modeTimer += 1
 
@@ -1765,7 +1848,7 @@ while True:
 
     screen.blit(img_Background, (0, 0))
 
-    if not thisGame.mode == 10:
+    if not thisGame.mode == MODE_BLANK_SCREEN_BEFORE_CHANGING_LEVELS:
         thisLevel.DrawMap()
 
         if thisGame.fruitScoreTimer > 0:
@@ -1778,10 +1861,10 @@ while True:
         thisFruit.Draw()
         player.Draw()
 
-        if thisGame.mode == 3:
+        if thisGame.mode == MODE_GAME_OVER:
             screen.blit(thisGame.imHiscores, (HS_XOFFSET, HS_YOFFSET))
 
-    if thisGame.mode == 5:
+    if thisGame.mode == MODE_WAIT_AFTER_EATING_GHOST:
         thisGame.DrawNumber(thisGame.ghostValue / 2,
                             (player.x - thisGame.screenPixelPos[0] - 4, player.y - thisGame.screenPixelPos[1] + 6))
 
