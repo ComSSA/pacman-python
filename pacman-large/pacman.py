@@ -77,7 +77,7 @@ def show_menu():
     )
 
     menu.add.button(
-        'New Game',
+        'Submit',
         # exit menu
         menu.disable,
         align=pygame_menu.locals.ALIGN_CENTER,
@@ -90,6 +90,9 @@ def show_menu():
 
     # get the discord ID from the menu
     discordID = menu.get_input_data()['discord_id']
+
+    # close the menu
+    menu.disable()
 
     return [playerID, discordID]
 
@@ -1724,6 +1727,8 @@ while True:
         thisGame.lives -= 1
         if thisGame.lives == -1:
             thisGame.updatehiscores(thisGame.score)
+            # add delay
+            pygame.time.wait(200)
             thisGame.SetMode(MODE_GAME_OVER)
             thisGame.drawmidgamehiscores()
         else:
