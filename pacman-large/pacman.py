@@ -32,7 +32,7 @@ pygame.font.init()
 # Pygame Menu theme
 comssa_theme = pygame_menu.themes.THEME_DARK.copy()
 # background color #4459a5
-# comssa_theme.background_color = (68, 89, 165)
+comssa_theme.background_color = (0,0,0)
 # no default title
 comssa_theme.title = False
 # selection colour for input with 30% transparency for color #f5831f 
@@ -53,14 +53,20 @@ def show_menu():
         theme=comssa_theme,
         width=s_width
     )
-    menu.add.label(
-        'ComSSA   Pacman',
-        align=pygame_menu.locals.ALIGN_CENTER,
-        font_size=50,
-        # color of white
-        font_color=(255, 255, 255)
-        # font_name='arcade.ttf'
+    # menu.add.label(
+    #     'ComSSA   Pacman',
+    #     align=pygame_menu.locals.ALIGN_CENTER,
+    #     font_size=50,
+    #     # color of white
+    #     font_color=(255, 255, 255)
+    #     # font_name='arcade.ttf'
+    # )
+
+    logo = pygame_menu.baseimage.BaseImage(
+        image_path='./res/text/logo.gif',
+        drawing_mode=pygame_menu.baseimage.IMAGE_MODE_FILL
     )
+    menu.add.image(logo)
 
     menu.add.text_input(
         'Enter your Student/Staff ID: ',
