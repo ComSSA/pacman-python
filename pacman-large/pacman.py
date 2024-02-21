@@ -278,7 +278,7 @@ class game:
             f.write(str(line[0]) + " " + line[1] + "\n")
         f.close()
 
-    @staticmethod
+    # @staticmethod
     # def getplayername():
     #     """Ask the player his name, to go on the high-score list."""
     #     if NO_WX:
@@ -1006,8 +1006,7 @@ class pacman:
         self.y = 0
         self.velX = 0
         self.velY = 0
-        # self.speed = 3
-        self.speed = 8
+        self.speed = 3
 
         self.nearestRow = 0
         self.nearestCol = 0
